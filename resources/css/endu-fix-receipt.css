@@ -1,0 +1,305 @@
+@font-face {
+    font-family: 'ENDU Receipt Thai';
+    src: url('../fonts/endu-fix/NotoSansThai-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'ENDU Receipt Thai';
+    src: url('../fonts/endu-fix/NotoSansThai-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-display: swap;
+}
+
+.endu-fix-receipt {
+    box-sizing: border-box;
+    width: 210mm;
+    height: 148mm;
+    margin-inline: auto;
+    padding: 3mm 4.6mm 4mm;
+    background: white;
+    color: #222;
+    --receipt-line-height: 1.33em;
+    font: 8pt/1.33 'ENDU Receipt Thai', Tahoma, sans-serif;
+}
+
+.endu-fix-receipt__header {
+    display: grid;
+    grid-template-columns: 34% 26% 40%;
+    align-items: start;
+    height: 19mm;
+}
+
+.endu-fix-receipt__logo {
+    width: 57mm;
+    height: auto;
+    margin-inline-start: 5.4mm;
+}
+
+.endu-fix-receipt__logo--custom {
+    max-height: 18mm;
+    object-fit: contain;
+    object-position: left top;
+}
+
+.endu-fix-receipt__issuer {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.endu-fix-receipt__heading {
+    padding-top: 2.8mm;
+    text-align: center;
+    font-weight: 700;
+}
+
+.endu-fix-receipt__heading h1 {
+    margin: 0;
+    font-size: 13pt;
+}
+
+.endu-fix-receipt__heading p {
+    margin: 2.3mm 0 0;
+    color: #555;
+    font: 700 8.4pt/1.1 'Times New Roman', serif;
+}
+
+.endu-fix-receipt__meta {
+    justify-self: end;
+    margin: 2.6mm 1.4mm 0 0;
+    width: 34mm;
+    font-weight: 700;
+}
+
+.endu-fix-receipt__meta div {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    align-items: baseline;
+    gap: 1mm;
+    height: 6mm;
+}
+
+.endu-fix-receipt__meta dd {
+    margin: 0;
+    min-height: 3mm;
+    border-bottom: 0.19mm solid #333;
+    text-align: center;
+    font-weight: 400;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.endu-fix-receipt__address {
+    height: 8mm;
+    margin-block: 0;
+    padding-block: 0.35mm 0.8mm;
+    white-space: nowrap;
+    font-size: 8pt;
+}
+
+.endu-fix-receipt__address--organization {
+    height: auto;
+    min-height: 8mm;
+    max-height: 14mm;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    font-size: 7.6pt;
+    line-height: 1.22;
+}
+
+.endu-fix-receipt__tables {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1mm;
+}
+
+.endu-fix-receipt__address,
+.endu-fix-receipt__tables {
+    margin-inline: 1.1mm 0.2mm;
+}
+
+.endu-fix-receipt__tables section {
+    border: 0.2mm solid #777;
+}
+
+.endu-fix-receipt__tables h2 {
+    display: grid;
+    place-items: center;
+    height: 7.1mm;
+    margin: 0;
+    background: #e7e8ea;
+    font-size: 8.2pt;
+    font-weight: 700;
+}
+
+.endu-fix-receipt__rows {
+    display: grid;
+    height: 87.8mm;
+    margin: 0;
+}
+
+.endu-fix-receipt__rows--customer {
+    grid-template-rows: 7.8mm 7.9mm 10.2mm repeat(5, 7.9mm) minmax(0, 1fr);
+    --label-width: 23%;
+}
+
+.endu-fix-receipt__rows--service {
+    grid-template-rows: 8.2mm repeat(3, 12.4mm) 8mm 8.3mm minmax(0, 1fr);
+    --label-width: 25.5%;
+}
+
+.endu-fix-receipt__rows > div {
+    min-height: 0;
+    border-top: 0.2mm solid #777;
+}
+
+.endu-fix-receipt__row {
+    display: grid;
+    grid-template-columns: var(--label-width) minmax(0, 1fr);
+}
+
+.endu-fix-receipt__row > * {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    margin: 0;
+    padding-inline: 0.8mm;
+}
+
+.endu-fix-receipt__row dt {
+    border-right: 0.2mm solid #777;
+    background: #f2f3f5;
+    font-weight: 700;
+}
+
+.endu-fix-receipt__value {
+    display: -webkit-box;
+    max-width: 100%;
+    max-height: calc(2 * var(--receipt-line-height));
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    white-space: pre-line;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.endu-fix-receipt__rows--service .endu-fix-receipt__value {
+    max-height: calc(3 * var(--receipt-line-height));
+    -webkit-line-clamp: 3;
+}
+
+.endu-fix-receipt__passcode .endu-fix-receipt__value {
+    max-height: calc(2 * var(--receipt-line-height));
+    white-space: break-spaces;
+    -webkit-line-clamp: 2;
+}
+
+.endu-fix-receipt__terms {
+    padding: 0.7mm 0.8mm;
+    background: #fafafa;
+}
+
+.endu-fix-receipt__terms dt {
+    font-weight: 700;
+}
+
+.endu-fix-receipt__terms dd {
+    max-height: calc(4 * var(--receipt-line-height));
+    margin: 0.6mm 0 0;
+    -webkit-line-clamp: 4;
+}
+
+.endu-fix-receipt__warranty {
+    display: flex;
+    align-items: center;
+    gap: 2.8mm;
+    padding-inline: 0.8mm;
+    font-weight: 700;
+}
+
+.endu-fix-receipt__warranty dd {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8mm;
+    margin: 0;
+}
+
+.endu-fix-receipt__checkbox {
+    display: grid;
+    place-items: center;
+    width: 2.4mm;
+    height: 2.4mm;
+    border: 0.24mm solid #222;
+}
+
+.endu-fix-receipt__checkbox svg {
+    display: block;
+    width: 1.65mm;
+    height: 1.65mm;
+}
+
+.endu-fix-receipt__pattern {
+    padding-top: 0.8mm;
+    text-align: center;
+    font-weight: 700;
+}
+
+.endu-fix-receipt__pattern dd {
+    margin: 0;
+}
+
+.endu-fix-receipt__pattern svg {
+    display: block;
+    width: 100%;
+    height: 21.5mm;
+}
+
+.endu-fix-receipt__signatures {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 13mm;
+    margin: 7.9mm 1.1mm 0;
+    font-weight: 700;
+}
+
+.endu-fix-receipt__signatures p {
+    display: flex;
+    align-items: baseline;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.endu-fix-receipt__signature-line {
+    flex: 1;
+    border-bottom: 0.2mm dotted #555;
+}
+
+@media print {
+    @page endu-fix-receipt {
+        size: A5 landscape;
+        margin: 0;
+    }
+
+    body:has(.endu-fix-receipt) {
+        page: endu-fix-receipt;
+        min-height: 0;
+        margin: 0;
+    }
+
+    body:has(.endu-fix-receipt) main {
+        max-width: none;
+        padding: 0;
+    }
+
+    .endu-fix-receipt {
+        width: 209.9mm;
+        height: 147.9mm;
+        break-inside: avoid;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+}

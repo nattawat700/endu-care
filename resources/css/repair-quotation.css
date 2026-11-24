@@ -1,0 +1,320 @@
+.repair-quotation, .quotation-approval {
+    width: 100%;
+    max-width: 860px;
+    margin-inline: auto;
+}
+
+.repair-quotation {
+    --quote-ink: #132641;
+    --quote-accent: #12756c;
+    --quote-muted: #4b6177;
+    --quote-rule: #dce6ec;
+    /* A4 minus the two print margins, with room for browser rounding. */
+    --quotation-print-height: 272.5mm;
+    padding: clamp(14px, 4vw, 32px);
+    color: var(--quote-ink);
+    background: white;
+    overflow-wrap: anywhere;
+}
+
+.quotation-doc-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 24px;
+    padding: 0 0 18px;
+    border-bottom: 1px solid var(--quote-rule);
+}
+
+.quotation-seller {
+    line-height: 1.5;
+}
+
+.quotation-seller img {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: min(100%, 230px);
+    max-height: 75px;
+    margin-bottom: 9px;
+    object-fit: contain;
+    object-position: left center;
+}
+
+.quotation-identity {
+    border-inline-start: 3px solid var(--quote-accent);
+    padding-inline-start: 16px;
+}
+
+.quotation-title {
+    font-size: clamp(19px, 3vw, 31px);
+    font-weight: 800;
+    letter-spacing: -0.015em;
+    line-height: 1.13;
+}
+
+.quotation-title span {
+    display: block;
+    margin-block: 5px 12px;
+    color: var(--quote-accent);
+    font-size: 0.62em;
+    font-weight: 700;
+}
+
+.quotation-identity-data {
+    display: grid;
+    gap: 4px;
+    font-size: 0.87em;
+}
+
+.quotation-identity-data div {
+    display: grid;
+    grid-template-columns: minmax(86px, 0.9fr) minmax(0, 1.1fr);
+    gap: 6px;
+}
+
+.quotation-identity-data dt {
+    color: var(--quote-muted);
+}
+
+.quotation-parties {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-block: 16px;
+}
+
+.quotation-parties section {
+    min-width: 0;
+    padding: 10px 12px;
+    background: #f4f8fa;
+    border-radius: 6px;
+    font-size: 0.88em;
+    line-height: 1.45;
+}
+
+.quotation-parties h3, .quotation-conditions h3, .quotation-signatures h3 {
+    margin-bottom: 4px;
+    color: var(--quote-accent);
+    font-weight: 750;
+}
+
+.quotation-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    font-size: 0.87em;
+}
+
+.quotation-table th, .quotation-table td {
+    padding: 8px 5px;
+    border-bottom: 1px solid var(--quote-rule);
+    vertical-align: top;
+}
+
+.quotation-table th:first-child {
+    width: 40%;
+    text-align: left;
+}
+
+.quotation-table th:nth-child(2) {
+    width: 10%;
+}
+
+.quotation-table th {
+    color: var(--quote-ink);
+    background: #eaf2f4;
+    font-weight: 750;
+}
+
+.quotation-settlement {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.83fr);
+    align-items: start;
+    gap: 22px;
+    margin-top: 17px;
+    font-size: 0.88em;
+}
+
+.quotation-conditions section + section {
+    margin-top: 9px;
+}
+
+.quotation-conditions p {
+    white-space: pre-wrap;
+}
+
+.quotation-totals {
+    padding: 7px 11px;
+    background: #f4f8fa;
+    border-radius: 6px;
+}
+
+.quotation-totals div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 6px;
+    padding-block: 3px;
+}
+
+.quotation-totals dd {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.quotation-totals .quotation-total-line {
+    margin-top: 5px;
+    padding-top: 6px;
+    border-top: 1px solid var(--quote-rule);
+    font-weight: 800;
+}
+
+.quotation-payable {
+    color: var(--quote-accent);
+    font-weight: 800;
+}
+
+.quotation-confirmed {
+    margin-top: 15px;
+    color: var(--quote-accent);
+    font-size: 0.88em;
+}
+
+.quotation-signatures {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 24px;
+    font-size: 0.87em;
+    text-align: center;
+}
+
+.quotation-signatures section {
+    padding: 0 12px 3px;
+}
+
+.quotation-sign-space {
+    display: grid;
+    align-items: end;
+    justify-items: center;
+    min-height: 35px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid #899bad;
+}
+
+.quotation-sign-space img {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 150px;
+    max-height: 52px;
+    object-fit: contain;
+}
+
+@media screen and (max-width: 620px) {
+    .repair-quotation:not([data-quotation-print-layout="measure"]) {
+        .quotation-doc-head, .quotation-parties, .quotation-settlement {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .quotation-table {
+            font-size: 0.74em;
+        }
+
+        .quotation-table th, .quotation-table td {
+            padding-inline: 3px;
+        }
+    }
+}
+
+.repair-quotation[data-quotation-print-layout="measure"] {
+    width: 186mm;
+    max-width: none;
+    padding: 0;
+    border: 0;
+    font-size: 10pt;
+}
+
+.repair-quotation[data-quotation-print-layout="measure"] .quotation-title {
+    font-size: 15.8pt;
+}
+
+.repair-quotation[data-quotation-print-layout="measure"] .quotation-closing {
+    display: flow-root;
+}
+
+@media print {
+    @page repair-quotation {
+        size: A4 portrait;
+        margin: 12mm;
+    }
+
+    body:has(.repair-quotation) {
+        page: repair-quotation;
+        min-height: 0;
+        margin: 0;
+    }
+
+    .quotation-screen-only, .quotation-unreleased {
+        display: none;
+    }
+
+    .quotation-print-notice {
+        display: block;
+    }
+
+    .repair-quotation {
+        max-width: none;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        font-size: 10pt;
+        print-color-adjust: exact;
+    }
+
+    .quotation-title {
+        font-size: 15.8pt;
+    }
+
+    .repair-quotation[data-quotation-print-layout="measure"] {
+        width: 100%;
+    }
+
+    .repair-quotation:not(.quotation-unreleased):where(:not([data-quotation-print-layout]), [data-quotation-print-layout="single"]) {
+        display: flex;
+        flex-direction: column;
+        min-height: var(--quotation-print-height);
+    }
+
+    .quotation-closing {
+        display: flex;
+        flex-direction: column;
+        flex: 1 0 auto;
+    }
+
+    .quotation-signatures {
+        margin-top: auto;
+        padding-top: 24px;
+    }
+
+    .repair-quotation[data-quotation-print-layout="multiple"] .quotation-closing,
+    .repair-quotation[data-quotation-print-layout="separate-signatures"] .quotation-signatures {
+        break-before: page;
+        min-height: var(--quotation-print-height);
+    }
+
+    .repair-quotation[data-quotation-print-layout="separate-signatures"] .quotation-closing {
+        display: block;
+    }
+
+    .repair-quotation[data-quotation-print-layout="separate-signatures"] .quotation-signatures {
+        align-content: end;
+    }
+
+    .quotation-doc-head, .quotation-parties, .quotation-table tr, .quotation-totals, .quotation-signatures {
+        break-inside: avoid;
+    }
+}

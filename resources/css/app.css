@@ -1,4 +1,7 @@
 @import 'tailwindcss';
+@import './endu-workspace.css';
+@import './endu-fix-receipt.css';
+@import './repair-quotation.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -6,4 +9,79 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+@layer components {
+    .panel {
+        border: 1px solid var(--endu-line);
+        border-radius: var(--endu-radius);
+        background: var(--endu-surface);
+    }
+
+    .button {
+        @apply inline-flex min-h-9 items-center justify-center gap-2 rounded-lg border px-3.5 py-2 text-sm font-semibold;
+    }
+
+    .button-primary {
+        border-color: var(--endu-brand);
+        background: var(--endu-brand);
+        color: white;
+    }
+
+    .button-primary:hover {
+        background: var(--endu-navy);
+    }
+
+    .button-secondary {
+        border-color: var(--endu-line);
+        background: var(--endu-surface);
+        color: var(--endu-ink);
+    }
+
+    .button-secondary:hover {
+        border-color: var(--endu-brand);
+        background: var(--endu-background);
+    }
+
+    .field-label {
+        @apply mb-1.5 block text-sm font-semibold;
+    }
+
+    .field-input {
+        @apply block w-full rounded-lg border px-3 py-2.5 text-base aria-invalid:border-red-600;
+        border-color: var(--endu-line);
+        background: var(--endu-surface);
+    }
+
+    .field-error {
+        @apply mt-1.5 text-sm text-red-700;
+    }
+
+    .badge {
+        @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold;
+    }
+
+    .badge-neutral {
+        @apply bg-slate-100 text-slate-700;
+    }
+
+    .badge-assigned {
+        @apply bg-sky-100 text-sky-900;
+    }
+
+    .detail-label {
+        @apply mb-1 text-sm font-medium text-slate-600;
+    }
+}
+
+@media print {
+    @page {
+        size: A4;
+        margin: 15mm;
+    }
+
+    body {
+        background: white;
+        color: black;
+    }
 }
