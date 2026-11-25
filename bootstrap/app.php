@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trimStrings(except: ['device_passcode']);
         $middleware->web(append: [EnsureActiveStaffSession::class]);
+        $middleware->trustProxies(at: ['127.0.0.1']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->dontFlash(['device_passcode', 'device_unlock_pattern', 'setup_code', 'mfa_code', 'token', 'webhook_secret', 'connector_token']);
