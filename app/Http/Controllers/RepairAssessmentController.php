@@ -8,7 +8,6 @@ use App\Enums\RepairStatus;
 use App\Models\Branch;
 use App\Models\RepairJob;
 use App\Support\RepairPriceItems;
-use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -46,6 +45,7 @@ class RepairAssessmentController extends Controller
             'assessment_revision' => ['required', 'integer', 'min:0'],
             'assignment_version' => ['required', 'integer', 'min:0'],
             'workflow_version' => ['required', 'integer', 'min:0'],
+            'due_version' => ['sometimes', 'required', 'integer', 'min:0'],
             'cause' => ['required', 'string', 'max:2000'],
             'repair_plan' => ['required', 'string', 'max:2000'],
             'expected_completion_at' => ['required', 'date_format:Y-m-d\TH:i', 'after_or_equal:1001-01-01'],
@@ -61,7 +61,7 @@ class RepairAssessmentController extends Controller
             'expected_completion_at.after_or_equal' => 'กรุณาระบุวันและเวลาคาดว่าจะซ่อมเสร็จให้ถูกต้อง',
         ]);
 
-        $expectedCompletion = CarbonImmutable::createFromFormat('!Y-m-d\TH:i', $fields['expected_completion_at'], 'Asia/Bangkok')->utc();
+        $expectedCompletion = RepairJob::parseLocalDueTime($fields['expected_completion_at']);
 
         DB::transaction(function () use ($branch, $repair, $request, $fields, $expectedCompletion): void {
             $job = $branch->repairs()->whereKey($repair->id)->lockForUpdate()->firstOrFail();
@@ -77,7 +77,8 @@ class RepairAssessmentController extends Controller
             $revision = (int) $job->assessments()->max('revision');
             if ($revision !== (int) $fields['assessment_revision']
                 || $job->assignment_version !== (int) $fields['assignment_version']
-                || $job->workflow_version !== (int) $fields['workflow_version']) {
+                || $job->workflow_version !== (int) $fields['workflow_version']
+                || (isset($fields['due_version']) && $job->due_version !== (int) $fields['due_version'])) {
                 throw ValidationException::withMessages(['assessment_revision' => 'ใบงานหรือผลประเมินมีการเปลี่ยนแปลง กรุณาโหลดข้อมูลล่าสุดก่อนบันทึก']);
             }
 
@@ -103,11 +104,14 @@ class RepairAssessmentController extends Controller
                 'total_satang' => array_sum(array_column($items, 'total_satang')),
             ]);
 
+            $job->reviseDueAt($expectedCompletion);
             if ($requestPriceChange) {
                 $job->price_change_assessment_id = $assessment->id;
                 $job->moveTo(RepairStatus::AwaitingApproval, $request->user(), "แจ้งงานเพิ่มเติมจากผลประเมินครั้งที่ {$assessment->revision} และพักงานรออนุมัติราคาใหม่");
             } elseif ($send) {
                 $job->moveTo(RepairStatus::AwaitingApproval, $request->user(), "ส่งผลตรวจและประเมินราคา ครั้งที่ {$assessment->revision} ให้หน้าร้าน");
+            } else {
+                $job->save();
             }
         }, 3);
 

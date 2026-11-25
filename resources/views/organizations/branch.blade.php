@@ -5,7 +5,10 @@
             <h1 class="mt-2">ตั้งค่าสาขา</h1>
             <p>{{ $branch->name }} · {{ $branch->code }}</p>
         </div>
-        <a class="button button-secondary" href="{{ route('organization-approvals.index', $branch) }}">คำขออนุมัติรายการ</a>
+        <div class="flex flex-wrap gap-2">
+            <a class="button button-secondary" href="{{ route('branch-settings.warehouses.index', $branch) }}">คลังและตำแหน่งเก็บ</a>
+            <a class="button button-secondary" href="{{ route('organization-approvals.index', $branch) }}">คำขออนุมัติรายการ</a>
+        </div>
     </div>
     @include('organizations.errors')
 
@@ -48,7 +51,10 @@
                     <h2 class="text-lg font-bold">หัวเอกสารสาขา</h2>
                     <p class="mt-1 text-sm text-slate-600">ใช้ข้อมูลในส่วนนี้กับใบรับซ่อมและใบเสนอราคาของสาขา หากเว้นชื่อ ที่อยู่ หรือเบอร์โทร ระบบจะใช้ข้อมูลทั่วไปของสาขา</p>
                 </div>
-                <a class="button button-secondary" href="{{ route('branch-settings.document.preview', $branch) }}">ดูตัวอย่างหัวเอกสาร</a>
+                <div class="flex flex-wrap gap-2">
+                    <a class="button button-secondary" href="{{ route('branch-settings.document.preview', $branch) }}">ดูตัวอย่างหัวเอกสาร</a>
+                    <a class="button button-secondary" href="{{ route('documents.settings', $branch) }}">ตั้งค่าชุดเลขและภาษี</a>
+                </div>
             </div>
             @include('organizations.document-form', ['action' => route('branch-settings.document', $branch), 'profile' => $branch->document_profile ?? [], 'nameLabel' => 'ชื่อสาขาบนเอกสาร'])
         </section>

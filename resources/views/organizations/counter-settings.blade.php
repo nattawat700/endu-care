@@ -7,11 +7,17 @@
     @foreach ([null, ...$branch->paymentPoints] as $point)
         <details class="mt-3 border-b border-slate-100 pb-3">
             <summary class="endu-text-action cursor-pointer">{{ $point ? $point->name.' · '.$point->code : 'เพิ่มจุดรับเงิน' }}</summary>
-            <form method="POST" action="{{ $point ? route('branch-settings.payment-points.update', [$branch, $point]) : route('branch-settings.payment-points.store', $branch) }}" class="mt-3 grid gap-3 sm:grid-cols-2">
+            <form method="POST" action="{{ $point ? route('branch-settings.payment-points.update', [$branch, $point]) : route('branch-settings.payment-points.store', $branch) }}" class="mt-3 grid gap-3 sm:grid-cols-2" enctype="multipart/form-data">
                 @csrf
                 @if ($point) @method('PATCH') @endif
                 <label class="block"><span class="field-label">ชื่อจุดรับเงิน</span><input class="field-input" name="name" value="{{ $point?->name }}" maxlength="100" required></label>
                 <label class="block"><span class="field-label">รหัสจุดรับเงิน</span><input class="field-input" name="code" value="{{ $point?->code }}" maxlength="32" required></label>
+                <label class="block"><span class="field-label">ชื่อช่องทางเพิ่มเติม (ถ้ามี)</span><input class="field-input" name="other_channel_name" value="{{ $point?->other_channel_name }}" maxlength="60" placeholder="เช่น บัตรเครดิต"></label>
+                <label class="block"><span class="field-label">รูป QR หน้าร้าน (ถ้ามี)</span><input type="file" class="field-input" name="point_qr" accept="image/jpeg,image/png,image/webp"></label>
+                @if ($point?->qr_filename)
+                    <div><a class="endu-text-action" target="_blank" rel="noopener noreferrer" href="{{ route('cash-shifts.qr', [$branch, $point]) }}">ดู QR ปัจจุบัน</a>
+                    <label class="ml-3"><input type="checkbox" name="remove_qr" value="1"> ลบ QR</label></div>
+                @endif
                 <div class="sm:col-span-2"><button class="button button-primary" type="submit">บันทึกจุดรับเงิน</button></div>
             </form>
         </details>

@@ -9,7 +9,7 @@
             <a class="button button-primary" href="{{ route('repairs.quotations.create', [$branch, $repair]) }}"><x-workspace-icon name="plus" /> {{ $latest ? 'ออกฉบับแก้' : 'ออกใบเสนอราคา' }}</a>
         @endif
     </div>
-    @if ($latest && $repair->status === \App\Enums\RepairStatus::AwaitingApproval && ! $latest->approved_at)
+    @if ($latest && $repair->status === \App\Enums\RepairStatus::AwaitingApproval && ! $latest->approved_at && ! $latest->voided_at)
         <p class="mb-4 rounded-lg border border-sky-200 bg-sky-50 p-3 text-sm text-sky-900">
             <a class="font-semibold underline" href="{{ route('repairs.quotations.show', [$branch, $repair, $latest]) }}{{ $latest->canRelease() ? '#customer-approval' : '' }}">เปิด {{ $latest->reference() }}</a>
             {{ $latest->canRelease() ? 'เพื่อบันทึกการส่งขออนุมัติหรือการยืนยันของลูกค้า' : 'เพื่อตรวจขั้นตอนอนุมัติราคา' }}
@@ -36,7 +36,7 @@
                             <td><span class="badge badge-neutral">{{ $quote->internalApprovalLabel($quote->is($latest)) }}</span></td>
                             <td>
                                 @if ($quote->approved_at)
-                                    <span class="badge bg-emerald-100 text-emerald-900">ลูกค้ายืนยันแล้ว</span>
+                                    <span class="badge bg-emerald-100 text-emerald-900">{{ $quote->voided_at ? 'เคยยืนยันก่อนยกเลิก' : 'ลูกค้ายืนยันแล้ว' }}</span>
                                 @elseif ($quote->is($latest) && $quote->canRelease() && $repair->status === \App\Enums\RepairStatus::AwaitingApproval)
                                     <span class="badge bg-amber-100 text-amber-900">{{ $quote->customer_requested_at ? 'ส่งแล้ว · รอลูกค้ายืนยัน' : 'พร้อมส่งขออนุมัติ' }}</span>
                                 @endif

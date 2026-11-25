@@ -14,6 +14,7 @@
     $activeModule ??= match (true) {
         request()->routeIs('dashboard') => 'OPS',
         request()->routeIs('repairs.*') => 'REP',
+        request()->routeIs('crm.*') => 'CRM',
         request()->routeIs('staff.*') => 'IAM',
         request()->routeIs('audit.*') => 'SEC',
         request()->routeIs('organizations.*', 'branch-settings.*') => 'ORG',
@@ -23,6 +24,7 @@
     $currentSection = match ($activeModule) {
         'OPS' => 'ภาพรวม',
         'REP' => 'งานซ่อม',
+        'POS' => 'ขายหน้าร้าน POS',
         default => $title,
     };
 @endphp
@@ -35,7 +37,7 @@
     <title>{{ $title }} | ENDU CARE</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="endu-app min-h-screen antialiased">
+<body @class(['endu-app min-h-screen antialiased', 'pos-workspace' => request()->routeIs('pos.*')])>
     <a href="#main" class="endu-skip print:hidden">ข้ามไปเนื้อหาหลัก</a>
     @auth
         <aside class="endu-sidebar endu-sidebar--desktop print:hidden" aria-label="เมนูระบบหลัก">

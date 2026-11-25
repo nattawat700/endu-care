@@ -1,11 +1,11 @@
 <div class="sm:col-span-2">
-    <x-repair-input name="customer_address" label="ที่อยู่" :limit="500" :rows="2" />
+    <x-repair-input name="customer_address" label="ที่อยู่" :limit="500" :rows="2" :default="$customer?->billing_address ?? $customer?->delivery_address" />
 </div>
 <x-repair-input name="product" label="สินค้า" :limit="120" placeholder="เช่น โทรศัพท์มือถือ" required />
-<x-repair-input name="device" label="รุ่น" :limit="150" placeholder="เช่น iPhone 13" required />
+<x-repair-input name="device" label="รุ่น" :limit="150" placeholder="เช่น iPhone 13" :default="$registeredDevice?->model" required />
 <x-repair-input name="color" label="สี" :limit="80" />
-<x-repair-input name="imei" label="IMEI" :limit="15" inputmode="numeric" placeholder="ตัวเลข 15 หลัก" />
-<x-repair-input name="serial_number" label="Serial No." :limit="80" />
+<x-repair-input name="imei" label="IMEI" :limit="15" inputmode="numeric" placeholder="ตัวเลข 15 หลัก" :default="$registeredDevice?->imei" :readonly="$registeredDevice?->imei !== null" />
+<x-repair-input name="serial_number" label="Serial No." :limit="80" :default="$registeredDevice?->serial_number" :readonly="$registeredDevice?->serial_number !== null" />
 <x-repair-input name="policy_number" label="เลขที่กรมธรรม์" :limit="80" />
 <div class="sm:col-span-2">
     <x-repair-input name="intake_terms" label="เงื่อนไข" :limit="1000" :rows="3" />

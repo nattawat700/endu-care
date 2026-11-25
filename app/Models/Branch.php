@@ -45,6 +45,66 @@ class Branch extends Model
         return $this->hasMany(RepairJob::class);
     }
 
+    public function posSales(): HasMany
+    {
+        return $this->hasMany(PosSale::class);
+    }
+
+    public function issuedDocuments(): HasMany
+    {
+        return $this->hasMany(IssuedDocument::class);
+    }
+
+    public function serviceClaims(): HasMany
+    {
+        return $this->hasMany(ServiceClaim::class);
+    }
+
+    public function cashShifts(): HasMany
+    {
+        return $this->hasMany(CashShift::class);
+    }
+
+    public function repairPayments(): HasMany
+    {
+        return $this->hasMany(RepairPayment::class);
+    }
+
+    public function customers(): HasMany
+    {
+        return $this->hasMany(Customer::class);
+    }
+
+    public function catalogProducts(): HasMany
+    {
+        return $this->hasMany(CatalogProduct::class);
+    }
+
+    public function integrationConnections(): HasMany
+    {
+        return $this->hasMany(IntegrationConnection::class);
+    }
+
+    public function integrationImports(): HasMany
+    {
+        return $this->hasMany(IntegrationImport::class);
+    }
+
+    public function catalogWarehouses(): HasMany
+    {
+        return $this->hasMany(CatalogWarehouse::class);
+    }
+
+    public function catalogMovements(): HasMany
+    {
+        return $this->hasMany(CatalogMovement::class);
+    }
+
+    public function appointments(): HasMany
+    {
+        return $this->hasMany(CustomerAppointment::class);
+    }
+
     public function paymentPoints(): HasMany
     {
         return $this->hasMany(BranchPaymentPoint::class);
@@ -99,7 +159,7 @@ class Branch extends Model
 
     protected function casts(): array
     {
-        return ['document_profile' => 'array', 'working_days' => 'array'];
+        return ['issuance_settings' => 'array', 'document_profile' => 'array', 'working_days' => 'array'];
     }
 
     public function usesEnduFixReceipt(): bool

@@ -50,29 +50,35 @@ enum BranchRole: string
     {
         $reception = [
             BranchPermission::ReadRepairs, BranchPermission::CreateRepair, BranchPermission::AssignRepair,
-            BranchPermission::EditAssessment, BranchPermission::CompleteRepair, BranchPermission::CancelRepair,
-            BranchPermission::PrintRepair, BranchPermission::ReadQuotation, BranchPermission::DraftQuotation,
+            BranchPermission::EditAssessment, BranchPermission::EditRepairDeadline, BranchPermission::CompleteRepair, BranchPermission::CancelRepair,
+            BranchPermission::PrintRepair, BranchPermission::IssueServiceDocuments, BranchPermission::ViewRepairDeposits, BranchPermission::ManagePaymentDocuments, BranchPermission::ReadQuotation, BranchPermission::DraftQuotation,
             BranchPermission::ConfirmCustomerPrice, BranchPermission::PrintQuotation, BranchPermission::CustomerData,
             BranchPermission::DeviceAccess, BranchPermission::PrivateCustomerDetails, BranchPermission::InternalNotes,
+            BranchPermission::ManageCustomers,
+            BranchPermission::RepairEvidence,
+            BranchPermission::ReadCatalog, BranchPermission::CatalogGroupPrices, BranchPermission::ReadPartsDocuments, BranchPermission::ManageRepairParts,
         ];
         $management = [
-            ...$reception, BranchPermission::ReviewQuotation, BranchPermission::ExportRepairs,
-            BranchPermission::Costs, BranchPermission::Profit, BranchPermission::ManageStaff,
+            ...$reception, BranchPermission::ApproveDepositRetention, BranchPermission::ReviewServiceClaims, BranchPermission::ReviewQuotation, BranchPermission::ExportRepairs,
+            BranchPermission::Costs, BranchPermission::Profit, BranchPermission::ManageStaff, BranchPermission::InspectRepair,
+            BranchPermission::ManageCatalog, BranchPermission::ManageCatalogStock,
+            BranchPermission::ManageIntegrations, BranchPermission::VerifyPayments, BranchPermission::UsePos, BranchPermission::SetPosPriceGroup, BranchPermission::ManagePos,
         ];
 
         return in_array($permission, match ($this) {
             self::Reception => $reception,
             self::Manager => $management,
-            self::Owner => [...$management, BranchPermission::Compensation, BranchPermission::Commissions, BranchPermission::ManageBranchSettings],
-            self::Hq => [...$management, BranchPermission::Commissions, BranchPermission::ManageBranchSettings],
+            self::Owner => [...$management, BranchPermission::Compensation, BranchPermission::Commissions, BranchPermission::ManageBranchSettings, BranchPermission::CancelIssuedQuotation],
+            self::Hq => [...$management, BranchPermission::Commissions, BranchPermission::ManageBranchSettings, BranchPermission::CancelIssuedQuotation],
             self::Technician => [
-                BranchPermission::ReadAssignedRepairs, BranchPermission::EditAssessment, BranchPermission::TechnicianWorkflow,
-                BranchPermission::MaskedDeviceIdentifiers,
+                BranchPermission::ReadAssignedRepairs, BranchPermission::EditAssessment, BranchPermission::EditRepairDeadline, BranchPermission::TechnicianWorkflow,
+                BranchPermission::MaskedDeviceIdentifiers, BranchPermission::ViewRepairDeposits,
+                BranchPermission::RepairEvidence, BranchPermission::InspectRepair, BranchPermission::ReadCatalog, BranchPermission::ReadPartsDocuments, BranchPermission::ManageRepairParts,
             ],
-            self::Pc => [BranchPermission::ReadRepairs, BranchPermission::CreateRepair],
-            self::Cashier => [BranchPermission::ReadRepairs, BranchPermission::ReadQuotation, BranchPermission::ConfirmCustomerPrice, BranchPermission::PrintQuotation, BranchPermission::CustomerData],
-            self::Stock => [BranchPermission::Costs],
-            self::Accounting => [BranchPermission::Costs, BranchPermission::Profit, BranchPermission::Commissions],
+            self::Pc => [BranchPermission::UsePos, BranchPermission::ReadRepairs, BranchPermission::CreateRepair, BranchPermission::ReadCatalog],
+            self::Cashier => [BranchPermission::IssueServiceDocuments, BranchPermission::CompleteRepair, BranchPermission::CancelRepair, BranchPermission::ViewRepairDeposits, BranchPermission::UsePos, BranchPermission::SetPosPriceGroup, BranchPermission::ManagePaymentDocuments, BranchPermission::ReadRepairs, BranchPermission::ReadQuotation, BranchPermission::ConfirmCustomerPrice, BranchPermission::PrintQuotation, BranchPermission::CustomerData, BranchPermission::ReadCatalog, BranchPermission::ReadPartsDocuments, BranchPermission::ManageRepairParts],
+            self::Stock => [BranchPermission::Costs, BranchPermission::ReadCatalog, BranchPermission::ManageCatalog, BranchPermission::CatalogGroupPrices, BranchPermission::ManageCatalogStock, BranchPermission::ReadPartsDocuments],
+            self::Accounting => [BranchPermission::IssueServiceDocuments, BranchPermission::ManagePaymentDocuments, BranchPermission::VerifyPayments, BranchPermission::Costs, BranchPermission::Profit, BranchPermission::Commissions, BranchPermission::ReadCatalog, BranchPermission::ReadPartsDocuments],
             self::Hr => [BranchPermission::Compensation, BranchPermission::Commissions, BranchPermission::ManageStaff],
         }, true);
     }

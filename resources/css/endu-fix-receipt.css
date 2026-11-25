@@ -296,8 +296,11 @@
     }
 
     .endu-fix-receipt {
-        width: 209.9mm;
-        height: 147.9mm;
+        display: flow-root;
+        height: auto;
+        /* Fit the form as a whole and leave clearance for print rounding. */
+        zoom: 0.95;
+        zoom: min(1, (100vw - 2mm) / 210mm, (100vh - 2mm) / 148mm);
         break-inside: avoid;
         print-color-adjust: exact;
         -webkit-print-color-adjust: exact;

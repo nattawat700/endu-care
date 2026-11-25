@@ -1,7 +1,10 @@
 @import 'tailwindcss';
 @import './endu-workspace.css';
+@import './pos.css';
 @import './endu-fix-receipt.css';
 @import './repair-quotation.css';
+@import './a4-document-print.css';
+@import './catalog-print.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';

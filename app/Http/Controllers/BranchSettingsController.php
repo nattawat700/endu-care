@@ -9,11 +9,13 @@ use App\Models\BranchCounter;
 use App\Models\BranchPaymentPoint;
 use App\Models\BranchPrinterProfile;
 use App\Models\Organization;
+use App\Support\PaymentProof;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -104,17 +106,43 @@ class BranchSettingsController extends Controller
             $code->ignore($paymentPoint);
         }
         $this->normalizeCode($request);
-        $fields = $request->validate(['code' => ['required', 'alpha_dash:ascii', 'max:32', $code], 'name' => ['required', 'string', 'max:100']]);
-        DB::transaction(fn () => $paymentPoint
-            ? $branch->paymentPoints()->whereKey($paymentPoint->id)->lockForUpdate()->firstOrFail()->update($fields)
-            : $branch->paymentPoints()->create($fields), 3);
+        $fields = $request->validate([
+            'code' => ['required', 'alpha_dash:ascii', 'max:32', $code], 'name' => ['required', 'string', 'max:100'],
+            'other_channel_name' => ['nullable', 'string', 'max:60'], 'remove_qr' => ['sometimes', 'boolean'],
+            'point_qr' => ['nullable', ...PaymentProof::IMAGE_RULES],
+        ]);
+        $directory = BranchPaymentPoint::qrDirectory($branch);
+        $proof = $request->hasFile('point_qr') ? PaymentProof::store($request->file('point_qr'), $directory, 'point_qr') : null;
+        $saved = false;
+        try {
+            $previous = DB::transaction(function () use ($branch, $paymentPoint, $fields, $proof): ?string {
+                Branch::whereKey($branch->id)->lockForUpdate()->firstOrFail();
+                $point = $paymentPoint ? $branch->paymentPoints()->lockForUpdate()->findOrFail($paymentPoint->id) : $branch->paymentPoints()->make();
+                $previous = $point->qr_filename;
+                $point->fill(array_intersect_key($fields, array_flip(['code', 'name', 'other_channel_name'])));
+                if ($proof || ! empty($fields['remove_qr'])) {
+                    $point->qr_filename = $proof['filename'] ?? null;
+                }
+                $point->save();
+
+                return $previous === $point->qr_filename ? null : $previous;
+            }, 3);
+            $saved = true;
+        } finally {
+            if ($proof && ! $saved) {
+                Storage::disk('local')->delete($proof['path']);
+            }
+        }
+        if ($previous) {
+            Storage::disk('local')->delete($directory.'/'.$previous);
+        }
 
         return back()->with('status', 'บันทึกจุดรับเงินแล้ว');
     }
 
     public function printerProfile(Request $request, Branch $branch, ?BranchPrinterProfile $printerProfile = null): RedirectResponse
     {
-        Gate::authorize('permission', [$branch, BranchPermission::ManageBranchSettings]);
+        Gate::authorize('permission', [$branch, BranchPermission::ManageIntegrations]);
         $name = Rule::unique('branch_printer_profiles')->where('branch_id', $branch->id);
         if ($printerProfile !== null) {
             $name->ignore($printerProfile);

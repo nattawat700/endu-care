@@ -34,6 +34,7 @@
         <input type="hidden" name="assessment_revision" value="{{ $formVersion('assessment_revision', $assessment?->revision ?? 0) }}">
         <input type="hidden" name="assignment_version" value="{{ $formVersion('assignment_version', $repair->assignment_version) }}">
         <input type="hidden" name="workflow_version" value="{{ $formVersion('workflow_version', $repair->workflow_version) }}">
+        <input type="hidden" name="due_version" value="{{ $formVersion('due_version', $repair->due_version) }}">
         <h2 class="text-lg font-bold">ผลตรวจเครื่อง</h2>
         <div class="grid gap-4 sm:grid-cols-2">
             <label class="block">
@@ -46,7 +47,7 @@
             </label>
             <label class="block">
                 <span class="field-label">วันและเวลาคาดว่าจะซ่อมเสร็จ (เวลาไทย)</span>
-                <input class="field-input" type="datetime-local" name="expected_completion_at" value="{{ is_string(old('expected_completion_at')) ? old('expected_completion_at') : $assessment?->expected_completion_at->timezone('Asia/Bangkok')->format('Y-m-d\TH:i') }}" required>
+                <input class="field-input" type="datetime-local" name="expected_completion_at" value="{{ is_string(old('expected_completion_at')) ? old('expected_completion_at') : $repair->due_at?->timezone('Asia/Bangkok')->format('Y-m-d\TH:i') }}" required>
             </label>
         </div>
         <div class="space-y-3 border-t border-slate-200 pt-4">

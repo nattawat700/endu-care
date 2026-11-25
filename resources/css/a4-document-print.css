@@ -1,0 +1,30 @@
+[data-a4-print-page] .repair-quotation[data-quotation-print-layout="measure"] {
+    /* Allow for narrower printable areas when deciding whether the footer fits. */
+    width: 155mm;
+}
+
+@media print {
+    .repair-quotation:not(.quotation-unreleased) {
+        display: block;
+        min-height: 0;
+    }
+
+    .repair-quotation .quotation-closing {
+        display: block;
+    }
+
+    .repair-quotation .quotation-signatures {
+        margin-top: 24px;
+        padding-top: 0;
+    }
+
+    [data-attached-receipt] {
+        break-before: page;
+    }
+
+    [data-a4-print-mode="single"]:not([data-combined-service-print]) .quotation-signatures {
+        position: fixed;
+        inset: auto 0 2mm;
+        margin: 0;
+    }
+}

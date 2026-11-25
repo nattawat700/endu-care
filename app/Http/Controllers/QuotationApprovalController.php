@@ -30,6 +30,7 @@ class QuotationApprovalController extends Controller
             ->where('requires_internal_approval', true)
             ->whereNotNull('internal_requested_at')
             ->whereNull('internal_decision')
+            ->whereNull('voided_at')
             ->whereHas('repairJob', fn ($jobs) => $jobs->whereBelongsTo($branch)->whereIn('status', $allowedStatuses))
             ->with(['repairJob:id', 'internalRequester:id,name'])
             ->orderBy('internal_requested_at')->orderBy('id')
@@ -126,7 +127,7 @@ class QuotationApprovalController extends Controller
     {
         $job = $branch->repairs()->whereKey($repair->id)->lockForUpdate()->firstOrFail();
         $latest = $job->quotations()->orderByDesc('revision')->firstOrFail();
-        if (! $latest->is($quotation) || ! $latest->requires_internal_approval || ! $job->status->allowsQuotation()) {
+        if (! $latest->is($quotation) || $latest->voided_at !== null || ! $latest->requires_internal_approval || ! $job->status->allowsQuotation()) {
             throw ValidationException::withMessages(['review' => 'ใบเสนอราคาฉบับนี้ไม่พร้อมสำหรับการพิจารณา กรุณาตรวจฉบับล่าสุดและสถานะใบงาน']);
         }
 

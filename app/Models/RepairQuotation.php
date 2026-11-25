@@ -29,6 +29,11 @@ class RepairQuotation extends Model
         return $this->belongsTo(RepairJob::class);
     }
 
+    public function voidedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'voided_by');
+    }
+
     public function approvedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
@@ -75,12 +80,18 @@ class RepairQuotation extends Model
 
     public function canRelease(): bool
     {
+        return $this->voided_at === null && $this->wasReleased();
+    }
+
+    public function wasReleased(): bool
+    {
         return ! $this->requires_internal_approval || $this->internal_decision === QuotationDecision::Approved;
     }
 
     public function internalApprovalLabel(bool $isLatest = true): string
     {
         return match (true) {
+            $this->voided_at !== null => 'ยกเลิกแล้ว',
             ! $this->requires_internal_approval => 'ออกก่อนเริ่มขั้นตอนอนุมัติ',
             $this->internal_decision !== null => $this->internal_decision->label(),
             ! $isLatest => 'แทนที่ด้วยฉบับใหม่',
@@ -111,6 +122,7 @@ class RepairQuotation extends Model
             'total_satang' => 'integer',
             'repair_assessment_id' => 'integer',
             'approved_at' => 'datetime',
+            'voided_at' => 'datetime',
             'customer_requested_at' => 'datetime',
             'customer_confirmed_at' => 'datetime',
             'requires_internal_approval' => 'boolean',

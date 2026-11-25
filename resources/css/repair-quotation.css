@@ -9,7 +9,7 @@
     --quote-accent: #12756c;
     --quote-muted: #4b6177;
     --quote-rule: #dce6ec;
-    /* A4 minus the two print margins, with room for browser rounding. */
+    /* Nominal A4 content height for measuring before print layout starts. */
     --quotation-print-height: 272.5mm;
     padding: clamp(14px, 4vw, 32px);
     color: var(--quote-ink);
@@ -266,6 +266,8 @@
     }
 
     .repair-quotation {
+        /* In paged media the viewport follows the printable area. */
+        --quotation-page-min-height: calc(100vh - 2mm);
         max-width: none;
         padding: 0;
         border: 0;
@@ -286,7 +288,7 @@
     .repair-quotation:not(.quotation-unreleased):where(:not([data-quotation-print-layout]), [data-quotation-print-layout="single"]) {
         display: flex;
         flex-direction: column;
-        min-height: var(--quotation-print-height);
+        min-height: var(--quotation-page-min-height);
     }
 
     .quotation-closing {
@@ -303,7 +305,7 @@
     .repair-quotation[data-quotation-print-layout="multiple"] .quotation-closing,
     .repair-quotation[data-quotation-print-layout="separate-signatures"] .quotation-signatures {
         break-before: page;
-        min-height: var(--quotation-print-height);
+        min-height: var(--quotation-page-min-height);
     }
 
     .repair-quotation[data-quotation-print-layout="separate-signatures"] .quotation-closing {

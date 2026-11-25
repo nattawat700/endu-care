@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\BranchPermission;
 use App\Enums\RepairStatus;
 use App\Models\Branch;
+use App\Models\RepairJob;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -46,15 +47,26 @@ class BranchController extends Controller
         $series = $days->map(fn ($day) => ['label' => $day->format('d/m'), 'total' => 0]);
         $counts = collect();
         $recentRepairs = collect();
+        $deadlineAlerts = collect();
+        $deadlineCounts = ['overdue' => 0, 'today' => 0];
         if ($repairs !== null) {
             $counts = (clone $repairs)
-                ->whereNotIn('status', [RepairStatus::Delivered->value, RepairStatus::ReturnedUnrepaired->value])
+                ->open()
                 ->selectRaw('status, COUNT(*) as total')
                 ->groupBy('status')
                 ->toBase()
                 ->pluck('total', 'status');
             $recentRepairs = (clone $repairs)->with('technician:id,name')->latest('id')->limit(5)
                 ->get(['id', 'device', 'issue', 'technician_id', 'status', 'created_at', ...($canReadCustomers ? ['customer_name'] : [])]);
+            $deadlineJobs = (clone $repairs)->open()->responsibleFor($request->user())
+                ->where('due_at', '<', RepairJob::endOfDueDay($now));
+            $nowUtc = $now->utc();
+            $totals = (clone $deadlineJobs)->toBase()
+                ->selectRaw('COUNT(CASE WHEN due_at < ? THEN 1 END) AS overdue, COUNT(CASE WHEN due_at >= ? THEN 1 END) AS today', [$nowUtc, $nowUtc])
+                ->first();
+            $deadlineCounts = ['overdue' => (int) $totals->overdue, 'today' => (int) $totals->today];
+            $deadlineAlerts = $deadlineJobs
+                ->orderBy('due_at')->orderBy('id')->limit(5)->get(['id', 'device', 'due_at', 'status']);
 
             $trend = (clone $repairs)->where(function ($query) use ($days, $today): void {
                 $query->where(fn ($recorded) => $recorded->where('business_date', '>=', $days->first()->toDateString())
@@ -81,6 +93,10 @@ class BranchController extends Controller
             'series' => $series,
             'today' => $today,
             'recentRepairs' => $recentRepairs,
+            'queues' => RepairStatus::operationsQueues(),
+            'deadlineAlerts' => $deadlineAlerts,
+            'deadlineCounts' => $deadlineCounts,
+            'now' => $now,
         ]);
     }
 }

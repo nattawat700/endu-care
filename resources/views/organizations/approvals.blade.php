@@ -39,13 +39,16 @@
                         <h3 class="font-semibold wrap-break-word">{{ $approval->kind->label() }} · {{ $approval->reference }}</h3>
                         <span @class(['badge', 'bg-amber-100 text-amber-900' => $approval->status === 'pending', 'badge-neutral' => $approval->status !== 'pending'])>{{ $approval->statusLabel() }}</span>
                     </div>
+                    @if ($approval->posSale)
+                        <a class="endu-text-action mt-1 inline-block" href="{{ route('pos.show', [$branch, $approval->posSale]) }}">ดูบิลขาย</a>
+                    @endif
                     <p class="mt-1 text-sm">จำนวน {{ $approval->kind->format($approval->amount) }} {{ $approval->kind->unit() }} · เพดาน {{ $approval->kind->format($approval->limit) }} {{ $approval->kind->unit() }}</p>
                     <p class="mt-1 text-sm text-slate-600">ผู้ขอ {{ $approval->requester->name }} · บทบาทผู้อนุมัติ {{ $approval->review_role->label() }}</p>
                     <p class="mt-1 whitespace-pre-wrap wrap-break-word text-sm">{{ $approval->reason }}</p>
                     @if ($approval->reviewed_at)
                         <p class="mt-2 text-sm">พิจารณาโดย {{ $approval->reviewer->name }} · {{ $approval->reviewed_at->timezone('Asia/Bangkok')->format('d/m/Y H:i') }} น.</p>
                         <p class="mt-1 whitespace-pre-wrap wrap-break-word text-sm">{{ $approval->decision_reason }}</p>
-                    @elseif ($approval->status === 'pending' && $role === $approval->review_role && (int) $approval->requested_by !== auth()->id())
+                    @elseif ($approval->status === 'pending' && $role === $approval->review_role && (int) $approval->requested_by !== auth()->id() && (int) $approval->posSale?->created_by !== auth()->id())
                         <form method="POST" action="{{ route('organization-approvals.decide', [$branch, $approval]) }}" class="mt-3 max-w-lg space-y-2">
                             @csrf
                             @method('PATCH')

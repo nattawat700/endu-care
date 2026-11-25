@@ -22,6 +22,8 @@
         'working_days' => 'วันทำการ', 'shift_name' => 'ชื่อกะ', 'shift_start' => 'เวลาเริ่มกะ', 'shift_end' => 'เวลาจบกะ',
         'kind' => 'ประเภทคำขอ', 'review_role' => 'บทบาทผู้อนุมัติ', 'reviewed_by' => 'รหัสผู้พิจารณา',
         'reviewed_at' => 'เวลาพิจารณา', 'payment_point_id' => 'รหัสจุดรับเงิน', 'printer_profile_id' => 'รหัสโปรไฟล์เครื่องพิมพ์',
+        'voided_at' => 'เวลายกเลิก', 'voided_by' => 'รหัสผู้ยกเลิก', 'issue_id' => 'รหัสเอกสารคลังต้นทาง',
+        'repair_payment_id' => 'รหัสรายการรับเงินต้นทาง', 'pos_sale_id' => 'รหัสบิลขายต้นทาง',
         'paper' => 'ขนาดกระดาษ', 'invited_by' => 'รหัสผู้เชิญ', 'expires_at' => 'เวลาหมดอายุ', 'accepted_at' => 'เวลารับคำเชิญ',
     ];
     $display = static function (string $field, mixed $value): string {

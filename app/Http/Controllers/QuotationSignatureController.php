@@ -16,7 +16,7 @@ class QuotationSignatureController extends Controller
     {
         Gate::authorize('permission', [$branch, BranchPermission::ReadQuotation]);
         Gate::authorize('permission', [$branch, BranchPermission::CustomerData]);
-        abort_unless($quotation->signature_filename !== null && $quotation->canRelease(), 404);
+        abort_unless($quotation->signature_filename !== null && $quotation->wasReleased(), 404);
 
         $disk = Storage::disk('local');
         $path = $quotation->signatureDirectory($branch).'/'.$quotation->signature_filename;

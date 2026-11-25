@@ -242,8 +242,8 @@ test('rejection and replacing a pending revision preserve old audit details and 
 test('quotations issued before the internal approval workflow keep their previous behavior', function () {
     $this->actingAs($this->reception)->post($this->store, $this->fields)->assertSessionHasNoErrors();
     $quote = RepairQuotation::sole();
-    $quote->requires_internal_approval = false;
-    $quote->save();
+    $this->job->quotations()->whereKey($quote->id)->update(['requires_internal_approval' => false]);
+    $quote->refresh();
     $args = [$this->branch, $this->job, $quote];
     $this->get(route('repairs.quotations.show', $args))->assertOk()
         ->assertSee('ออกก่อนเริ่มขั้นตอนอนุมัติ')->assertSee('พิมพ์ใบเสนอราคา');

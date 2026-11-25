@@ -49,7 +49,7 @@ class OrganizationApprovalController extends Controller
         abort_if($kinds === [], 403);
         $approvals = $branch->approvalRequests()->where(fn ($requests) => $requests
             ->where('requested_by', $request->user()->id)->orWhere('review_role', $role))
-            ->with(['requester:id,name', 'reviewer:id,name'])
+            ->with(['requester:id,name', 'reviewer:id,name', 'posSale:id,approval_id,created_by'])
             ->orderByRaw("CASE WHEN status = 'pending' THEN 0 ELSE 1 END")->orderByDesc('id')->paginate(20);
         $rules = $branch->organization->approval_rules ?? [];
         $submissionId = (string) Str::uuid();
@@ -118,6 +118,7 @@ class OrganizationApprovalController extends Controller
             abort_if($organization->suspended_at !== null, 404);
             $approval = $branch->approvalRequests()->whereKey($approvalRequest->id)->lockForUpdate()->firstOrFail();
             abort_unless($approval->status === 'pending', 409);
+            abort_if((int) $approval->posSale?->created_by === $request->user()->id, 403);
             $approval->update($fields + ['reviewed_by' => $request->user()->id, 'reviewed_at' => now()]);
         }, 3);
 

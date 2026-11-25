@@ -130,6 +130,10 @@ class CustomerQuotationApprovalController extends Controller
             throw ValidationException::withMessages([$errorField => 'มีใบเสนอราคาฉบับใหม่แล้ว กรุณาเปิดฉบับล่าสุดก่อนบันทึก']);
         }
 
+        if ($latest->voided_at !== null) {
+            throw ValidationException::withMessages([$errorField => 'ใบเสนอราคาฉบับนี้ยกเลิกแล้ว กรุณาออกฉบับใหม่']);
+        }
+
         if (! $job->coversPriceChange($latest->repair_assessment_id)) {
             throw ValidationException::withMessages([$errorField => 'มีงานเพิ่มเติมที่รออนุมัติ กรุณาจัดทำใบเสนอราคาจากผลประเมินใหม่']);
         }

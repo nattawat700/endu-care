@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Http\Controllers\StaffMfaController;
 use App\Models\User;
 use App\Observers\AuditObserver;
+use App\Observers\IssuedRecordObserver;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -27,6 +28,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        foreach (IssuedRecordObserver::MODELS as $model) {
+            $model::observe(IssuedRecordObserver::class);
+        }
+
         foreach (AuditObserver::models() as $model) {
             $model::observe(AuditObserver::class);
         }

@@ -89,7 +89,8 @@ test('only the issuing branch feeds both document headers and new versions retai
 
     $this->ticket->seller_profile = ['name' => 'ผู้ขายระดับกิจการ', 'branch_name' => 'ENDU FIX', 'email' => 'company@example.test'];
     $this->ticket->save();
-    $quote->update(['seller_profile' => $this->ticket->seller_profile]);
+    // Simulate a historical snapshot written by the old release.
+    $this->ticket->quotations()->whereKey($quote->id)->update(['seller_profile' => $this->ticket->seller_profile]);
     $this->get(route('repairs.print', $this->parameters))->assertOk()->assertSee('ชื่อใหม่')
         ->assertDontSee('ผู้ขายระดับกิจการ')->assertDontSee('company@example.test');
     $this->get(route('repairs.quotations.print', $quoteParameters))->assertOk()->assertSee('ชื่อใหม่')

@@ -1,20 +1,25 @@
 @php($profile = $branch->documentSeller($repair->seller_profile))
 
-<x-layout :title="'ใบรับเครื่อง '.$repair->reference()">
-    <div class="mx-auto mb-5 flex max-w-3xl flex-wrap items-center justify-between gap-3 print:hidden">
-        <a class="button button-secondary" href="{{ route('repairs.show', [$branch, $repair]) }}">← กลับใบงาน</a>
+<x-document-print :title="'ใบรับเครื่อง '.$repair->reference()" :pdf-assets="$pdfAssets ?? null">
+    <x-slot:controls>
+        <div class="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-3 p-3">
+            <a class="button button-secondary" href="{{ route('repairs.show', [$branch, $repair]) }}">← กลับใบงาน</a>
+            @if ($isEnduFix)
+                <span class="text-sm text-slate-600">{{ $repair->reference() }}</span>
+            @endif
+            <a class="button button-primary" href="{{ route('repairs.print', [$branch, $repair, 'format' => 'pdf'] + ($showUnlock ? ['show_unlock' => 1] : [])) }}" target="_blank" rel="noopener noreferrer">พิมพ์ใบรับเครื่อง</a>
+        </div>
         @if ($isEnduFix)
-            <span class="text-sm text-slate-600">{{ $repair->reference() }}</span>
+            @if ($repair->getRawOriginal('device_passcode') !== null || $repair->getRawOriginal('device_unlock_pattern') !== null)
+                <div class="mx-auto mb-4 flex max-w-3xl flex-wrap items-center justify-between gap-3 px-3">
+                    <p class="text-sm text-slate-600">{{ $showUnlock ? 'ฉบับนี้แสดงข้อมูลปลดล็อกเครื่อง' : 'ฉบับนี้ซ่อนข้อมูลปลดล็อกเครื่อง' }}</p>
+                    <a class="button button-secondary" href="{{ route('repairs.print', $showUnlock ? [$branch, $repair] : [$branch, $repair, 'show_unlock' => 1]) }}">{{ $showUnlock ? 'ซ่อนข้อมูลปลดล็อก' : 'แสดงข้อมูลปลดล็อกก่อนพิมพ์' }}</a>
+                </div>
+            @endif
         @endif
-        <button class="button button-primary" type="button" data-print-receipt>พิมพ์ใบรับเครื่อง</button>
-    </div>
+    </x-slot:controls>
+
     @if ($isEnduFix)
-        @if ($repair->getRawOriginal('device_passcode') !== null || $repair->getRawOriginal('device_unlock_pattern') !== null)
-            <div class="mx-auto mb-4 flex max-w-3xl items-center justify-between gap-3 print:hidden">
-                <p class="text-sm text-slate-600">{{ $showUnlock ? 'ฉบับนี้แสดงข้อมูลปลดล็อกเครื่อง' : 'ฉบับนี้ซ่อนข้อมูลปลดล็อกเครื่อง' }}</p>
-                <a class="button button-secondary" href="{{ route('repairs.print', $showUnlock ? [$branch, $repair] : [$branch, $repair, 'show_unlock' => 1]) }}">{{ $showUnlock ? 'ซ่อนข้อมูลปลดล็อก' : 'แสดงข้อมูลปลดล็อกก่อนพิมพ์' }}</a>
-            </div>
-        @endif
         @include('repairs.endu-fix-receipt')
     @else
         <article class="print-receipt panel mx-auto max-w-3xl p-6 sm:p-10 print:border-0 print:bg-white print:p-0 print:shadow-none">
@@ -51,4 +56,4 @@
             </div>
         </article>
     @endif
-</x-layout>
+</x-document-print>

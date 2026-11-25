@@ -17,7 +17,6 @@
     @if ($activeBranch && $canReadRepairs)
         @php
             $approval = \App\Enums\RepairStatus::AwaitingApproval;
-            $repairing = \App\Enums\RepairStatus::Repairing;
             $ready = \App\Enums\RepairStatus::Ready;
             $received = \App\Enums\RepairStatus::Received;
         @endphp
@@ -48,24 +47,25 @@
             </a>
         </section>
 
+        @include('repairs.deadline-alerts')
+
         <div class="endu-dashboard-grid">
             @include('repairs.intake-trend')
             <section class="panel">
                 <div class="endu-panel-head">
                     <h2>คิวที่ต้องจัดการ</h2>
-                    <p>เปิดใบงานตามสถานะ</p>
                 </div>
                 <div class="endu-action-queue">
-                    @foreach ([
-                        [$approval, 'ติดตามลูกค้าที่ยังไม่ยืนยัน', 'clock', 'gold'],
-                        [$repairing, 'ใบงานที่อยู่กับช่าง', 'repair', 'purple'],
-                        [$ready, 'เตรียมส่งมอบให้ลูกค้า', 'check', 'green'],
-                        [$received, 'มอบหมายช่างหรือเริ่มตรวจเครื่อง', 'box', 'blue'],
-                    ] as [$status, $description, $icon, $tone])
-                        <a href="{{ route('repairs.index', [$activeBranch, 'status' => $status->value]) }}">
+                    @foreach ($queues as $key => $queue)
+                        @php
+                            [$icon, $tone] = ['inspection' => ['phone', 'blue'], 'approval' => ['clock', 'gold'],
+                                'parts' => ['box', 'purple'], 'qc' => ['check', 'green']][$key];
+                            $total = collect($queue['statuses'])->sum(fn ($status) => $counts->get($status->value, 0));
+                        @endphp
+                        <a href="{{ route('repairs.index', [$activeBranch, 'queue' => $key]) }}">
                             <span class="endu-tone-icon endu-tone-icon--{{ $tone }}"><x-workspace-icon :name="$icon" /></span>
-                            <span><strong>{{ $status->label() }}</strong><small>{{ $description }}</small></span>
-                            <b>{{ number_format($counts->get($status->value, 0)) }}</b>
+                            <span><strong>{{ $queue['label'] }}</strong></span>
+                            <b>{{ number_format($total) }}</b>
                             <x-workspace-icon name="chev" />
                         </a>
                     @endforeach

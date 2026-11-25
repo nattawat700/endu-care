@@ -7,8 +7,11 @@ use App\Enums\RepairStatus;
 use App\Models\Branch;
 use App\Models\RepairJob;
 use App\Models\RepairQuotation;
+use App\Support\DocumentPdf;
+use App\Support\DocumentPrintHistory;
 use App\Support\QuotationAmounts;
 use App\Support\QuotationDetails;
+use App\Support\RepairBilling;
 use App\Support\RepairPriceItems;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -146,14 +149,16 @@ class RepairQuotationController extends Controller
         Gate::authorize('permission', [$branch, BranchPermission::CustomerData]);
         $role = $branch->roleFor($request->user());
         $latest = $quotation->revision === (int) $repair->quotations()->max('revision');
-        $allowsReview = $latest && $quotation->requires_internal_approval && $repair->status->allowsQuotation();
+        $allowsReview = $latest && $quotation->voided_at === null && $quotation->requires_internal_approval && $repair->status->allowsQuotation();
 
         return response()->view('quotations.show', [
             'branch' => $branch,
             'repair' => $repair,
-            'quotation' => $quotation->load(['approvedBy:id,name', 'customerApprovalRequester:id,name', 'internalRequester:id,name', 'internalReviewer:id,name', 'assessment:id,revision,expected_completion_at']),
+            'quotation' => $quotation->load(['voidedBy:id,name', 'approvedBy:id,name', 'customerApprovalRequester:id,name', 'internalRequester:id,name', 'internalReviewer:id,name', 'assessment:id,revision,expected_completion_at']),
             'comparisonQuote' => $quotation->revision > 1 ? $this->comparisonQuote($repair, $quotation->revision) : null,
             'isLatest' => $latest,
+            'canCancelQuote' => $latest && $quotation->canRelease() && $repair->status->allowsQuotation()
+                && $role->allows(BranchPermission::CancelIssuedQuotation),
             'canDraftQuote' => $role->allows(BranchPermission::DraftQuotation),
             'canPrintQuote' => $role->allows(BranchPermission::PrintQuotation),
             'canViewPrivateCustomerDetails' => $role->allows(BranchPermission::PrivateCustomerDetails),
@@ -165,26 +170,69 @@ class RepairQuotationController extends Controller
         ])->header('Cache-Control', 'private, no-store');
     }
 
-    public function print(Branch $branch, RepairJob $repair, RepairQuotation $quotation): Response
+    public function void(Request $request, Branch $branch, RepairJob $repair, RepairQuotation $quotation): RedirectResponse
+    {
+        Gate::authorize('permission', [$branch, BranchPermission::CancelIssuedQuotation]);
+        $fields = $request->validate(['void_reason' => ['required', 'string', 'max:500']]);
+
+        DB::transaction(function () use ($request, $branch, $repair, $quotation, $fields): void {
+            $branch = Branch::whereKey($branch->id)->lockForUpdate()->firstOrFail();
+            Gate::authorize('permission', [$branch, BranchPermission::CancelIssuedQuotation]);
+            $job = $branch->repairs()->whereKey($repair->id)->lockForUpdate()->firstOrFail();
+            $current = $job->quotations()->orderByDesc('revision')->lockForUpdate()->firstOrFail();
+            abort_unless($current->is($quotation), 409, 'กรุณาจัดการใบเสนอราคาฉบับล่าสุด');
+            if ($current->voided_at !== null) {
+                return;
+            }
+            abort_unless($current->canRelease() && $job->status->allowsQuotation(), 409, 'ใบเสนอราคาหรือสถานะใบงานนี้ยังยกเลิกไม่ได้');
+
+            $billing = RepairBilling::summary($job);
+            if ($billing['paid'] > 0 || $billing['pending'] > 0) {
+                throw ValidationException::withMessages(['void_reason' => 'กรุณาจัดการยอดที่รอตรวจและคืนยอดที่รับไว้ หรือออกใบเสนอราคาฉบับแก้']);
+            }
+
+            $current->voidedBy()->associate($request->user());
+            $current->voided_at = now();
+            $current->void_reason = $fields['void_reason'];
+            $current->save();
+
+            if ($job->status === RepairStatus::Repairing) {
+                $job->moveTo(RepairStatus::AwaitingApproval, $request->user(), 'ยกเลิกใบเสนอราคา '.$current->reference());
+            }
+        }, 3);
+
+        return redirect()->route('repairs.quotations.show', [$branch, $repair, $quotation])
+            ->with('status', 'ยกเลิกใบเสนอราคาแล้ว');
+    }
+
+    public function print(Request $request, Branch $branch, RepairJob $repair, RepairQuotation $quotation): Response
     {
         Gate::authorize('permission', [$branch, BranchPermission::PrintQuotation]);
         Gate::authorize('permission', [$branch, BranchPermission::CustomerData]);
-        abort_unless($quotation->canRelease(), 409);
+        abort_unless($quotation->wasReleased(), 409);
 
-        return response()->view('quotations.print', [
+        $data = [
             'branch' => $branch, 'repair' => $repair,
             'quotation' => $quotation->load(['assessment:id,revision,expected_completion_at', 'internalReviewer:id,name']),
             'isLatest' => $quotation->revision === (int) $repair->quotations()->max('revision'),
             'canPrintQuote' => true,
             'canViewPrivateCustomerDetails' => $branch->roleFor(auth()->user())->allows(BranchPermission::PrivateCustomerDetails),
-        ])->header('Cache-Control', 'private, no-store');
+        ];
+
+        if ($request->query('format') === 'pdf') {
+            $pdf = app(DocumentPdf::class)->render('quotations.print', $data, $quotation->reference());
+
+            return DocumentPrintHistory::record($pdf, $branch, 'quotation', $quotation->id, $quotation->reference());
+        }
+
+        return response()->view('quotations.print', $data)->header('Cache-Control', 'private, no-store');
     }
 
     private function comparisonQuote(RepairJob $repair, int $revision): ?RepairQuotation
     {
         $priorQuotes = $repair->quotations()->where('revision', '<', $revision)->orderByDesc('revision');
-        $columns = ['id', 'repair_job_id', 'revision', 'total_satang', 'approved_at'];
+        $columns = ['id', 'repair_job_id', 'revision', 'total_satang', 'approved_at', 'voided_at'];
 
-        return (clone $priorQuotes)->whereNotNull('approved_at')->first($columns) ?? $priorQuotes->first($columns);
+        return (clone $priorQuotes)->whereNotNull('approved_at')->whereNull('voided_at')->first($columns) ?? $priorQuotes->first($columns);
     }
 }

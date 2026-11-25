@@ -10,17 +10,22 @@
         'payable_satang' => $quotation->total_satang,
         'vat_mode' => 'none',
     ];
-    $releaseDate = $quotation->canRelease() ? ($quotation->internal_decided_at ?? $quotation->created_at) : $quotation->created_at;
-    $dateLabel = $quotation->canRelease() ? 'วันที่ออกเอกสาร' : 'วันที่จัดทำ';
+    $wasReleased = $quotation->wasReleased();
+    $printable = $wasReleased && $canPrintQuote;
+    $releaseDate = $wasReleased ? ($quotation->internal_decided_at ?? $quotation->created_at) : $quotation->created_at;
+    $dateLabel = $wasReleased ? 'วันที่ออกเอกสาร' : 'วันที่จัดทำ';
     $buyerPhone = array_key_exists('buyer_phone', $details) ? $details['buyer_phone'] : $repair->customer_phone;
     $money = static fn (int $amount): string => RepairQuotation::formatBaht($amount).' บาท';
 @endphp
 
 <div class="quotation-wrap">
-    @unless ($quotation->canRelease() && $canPrintQuote)
+    @unless ($printable)
         <p class="quotation-print-notice hidden">ใบเสนอราคา {{ $quotation->reference() }} ยังไม่พร้อมสำหรับพิมพ์ส่งลูกค้า</p>
     @endunless
-    <article @class(['panel repair-quotation', 'quotation-unreleased' => ! $quotation->canRelease() || ! $canPrintQuote])>
+    <article @class(['panel repair-quotation', 'quotation-unreleased' => ! $printable])>
+        @if ($quotation->voided_at)
+            <p class="mb-3 rounded-md border border-red-200 px-3 py-1 text-center text-sm font-bold text-red-800">ยกเลิกแล้ว / VOID · {{ $quotation->voided_at->timezone('Asia/Bangkok')->format('d/m/Y H:i') }}</p>
+        @endif
         <header class="quotation-doc-head">
             <div class="quotation-seller">
                 @include('organizations.seller-header')
@@ -34,10 +39,10 @@
                     <div><dt>ใบงานอ้างอิง</dt><dd>{{ $repair->reference() }}</dd></div>
                     <div><dt>ฉบับ</dt><dd>{{ $quotation->revision }} · {{ $isLatest ? 'ฉบับล่าสุด' : 'ฉบับก่อนหน้า' }}</dd></div>
                 </dl>
-                @unless ($quotation->canRelease())
+                @unless ($wasReleased)
                     <p class="mt-2 text-xs font-semibold text-amber-800">สำหรับตรวจภายใน · {{ $quotation->internalApprovalLabel($isLatest) }}</p>
                 @endunless
-                @if ($quotation->isExpired() && ! $quotation->approved_at)
+                @if ($quotation->voided_at === null && $quotation->isExpired() && ! $quotation->approved_at)
                     <p class="mt-2 text-xs font-semibold text-amber-800">ใบเสนอราคาหมดอายุ</p>
                 @endif
             </div>
@@ -69,25 +74,7 @@
             </section>
         </div>
 
-        <table class="quotation-table">
-            <caption class="sr-only">รายการสินค้าและบริการ</caption>
-            <thead><tr>
-                <th scope="col">รายการสินค้า / บริการ</th><th scope="col" class="text-right">จำนวน</th>
-                <th scope="col" class="text-right">ราคา/หน่วย</th><th scope="col" class="text-right">ส่วนลด</th>
-                <th scope="col" class="text-right">รวม (บาท)</th>
-            </tr></thead>
-            <tbody>
-                @foreach ($quotation->items as $item)
-                    <tr>
-                        <td><strong>{{ $item['description'] }}</strong><small class="block text-slate-600">{{ RepairQuotation::ITEM_TYPES[$item['type']] }}</small></td>
-                        <td class="text-right tabular-nums">{{ number_format($item['quantity']) }} @if (! empty($item['unit']))<small class="block text-slate-600">{{ $item['unit'] }}</small>@endif</td>
-                        <td class="text-right tabular-nums">{{ RepairQuotation::formatBaht($item['unit_satang']) }}</td>
-                        <td class="text-right tabular-nums">{{ ! empty($item['discount_satang']) ? RepairQuotation::formatBaht($item['discount_satang']) : '—' }}</td>
-                        <td class="text-right tabular-nums">{{ RepairQuotation::formatBaht($item['total_satang']) }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+        @include('quotations.line-items', ['items' => $quotation->items])
 
         <div class="quotation-closing">
             <div class="quotation-settlement">
@@ -109,15 +96,7 @@
                     @endisset
                 </div>
                 <dl class="quotation-totals">
-                    <div><dt>รวมมูลค่ารายการ</dt><dd>{{ $money($amounts['subtotal_satang']) }}</dd></div>
-                    @if (! empty($amounts['line_discount_satang'])) <div><dt>ส่วนลดรายบรรทัด</dt><dd>−{{ $money($amounts['line_discount_satang']) }}</dd></div> @endif
-                    @if (! empty($amounts['document_discount_satang'])) <div><dt>ส่วนลดท้ายเอกสาร</dt><dd>−{{ $money($amounts['document_discount_satang']) }}</dd></div> @endif
-                    @if (! empty($amounts['shipping_satang'])) <div><dt>ค่าขนส่ง</dt><dd>{{ $money($amounts['shipping_satang']) }}</dd></div> @endif
-                    @if (! empty($amounts['other_charge_satang'])) <div><dt>{{ $amounts['other_label'] ?? 'ค่าใช้จ่ายอื่น' }}</dt><dd>{{ $money($amounts['other_charge_satang']) }}</dd></div> @endif
-                    @if ($amounts['vat_mode'] !== 'none')
-                        <div><dt>มูลค่าก่อน VAT</dt><dd>{{ $money($amounts['net_before_vat_satang']) }}</dd></div>
-                        <div><dt>VAT {{ RepairQuotation::formatBaht($amounts['vat_rate'], '') }}%</dt><dd>{{ $money($amounts['vat_satang']) }}</dd></div>
-                    @endif
+                    @include('quotations.amount-breakdown')
                     <div class="quotation-total-line"><dt>ยอดรวมใบเสนอราคา</dt><dd data-quotation-total>{{ $money($quotation->total_satang) }}</dd></div>
                     @if (! empty($amounts['withholding_satang']))
                         <div><dt>ภาษีหัก ณ ที่จ่าย</dt><dd>−{{ $money($amounts['withholding_satang']) }}</dd></div>
@@ -127,18 +106,18 @@
             </div>
 
             @if ($quotation->approved_at)
-                <p class="quotation-confirmed"><strong>ลูกค้ายืนยันฉบับนี้แล้ว</strong> {{ ($quotation->customer_confirmed_at ?? $quotation->approved_at)->timezone('Asia/Bangkok')->format('d/m/Y H:i') }} น.</p>
+                <p class="quotation-confirmed"><strong>{{ $quotation->voided_at ? 'ลูกค้าเคยยืนยันก่อนยกเลิก' : 'ลูกค้ายืนยันฉบับนี้แล้ว' }}</strong> {{ ($quotation->customer_confirmed_at ?? $quotation->approved_at)->timezone('Asia/Bangkok')->format('d/m/Y H:i') }} น.</p>
             @endif
             <footer class="quotation-signatures">
                 <section>
                     <h3>ผู้อนุมัติใบเสนอราคา</h3>
                     <div class="quotation-sign-space">
-                        @if ($quotation->signature_filename && $quotation->canRelease())
+                        @if ($quotation->signature_filename && $wasReleased)
                             <img src="{{ route('repairs.quotations.signature', [$branch, $repair, $quotation]) }}" alt="ลายเซ็นผู้อนุมัติ">
                         @endif
                     </div>
-                    <p>{{ $quotation->canRelease() ? ($quotation->internalReviewer?->name ?? 'ลงชื่อผู้อนุมัติ') : 'ลงชื่อผู้อนุมัติ' }}</p>
-                    <p class="text-slate-600">{{ $quotation->canRelease() && $quotation->internal_decided_at ? $releaseDate->timezone('Asia/Bangkok')->format('d/m/Y') : 'วันที่ ____________________' }}</p>
+                    <p>{{ $wasReleased ? ($quotation->internalReviewer?->name ?? 'ลงชื่อผู้อนุมัติ') : 'ลงชื่อผู้อนุมัติ' }}</p>
+                    <p class="text-slate-600">{{ $wasReleased && $quotation->internal_decided_at ? $releaseDate->timezone('Asia/Bangkok')->format('d/m/Y') : 'วันที่ ____________________' }}</p>
                 </section>
                 <section>
                     <h3>ลูกค้ายืนยันใบเสนอราคา</h3>

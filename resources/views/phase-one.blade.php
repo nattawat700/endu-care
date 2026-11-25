@@ -7,6 +7,19 @@
         @if ($activeBranch && $module === 'REP')
             <a class="button button-secondary" href="{{ route('repairs.index', $activeBranch) }}">เปิดคิวงานซ่อม</a>
         @endif
+        @if ($activeBranch && $module === 'POS')
+            @can('permission', [$activeBranch, \App\Enums\BranchPermission::UsePos])
+                <a class="button button-primary" href="{{ route('pos.index', $activeBranch) }}">เปิดขายหน้าร้าน</a>
+            @endcan
+        @endif
+        @if ($activeBranch && $module === 'DOC')
+            @can('permission', [$activeBranch, \App\Enums\BranchPermission::ManagePaymentDocuments])
+                <a class="button button-primary" href="{{ route('payment-documents.index', $activeBranch) }}">ใบรับเงินและใบเสร็จ</a>
+            @endcan
+            @can('permission', [$activeBranch, \App\Enums\BranchPermission::ReadPartsDocuments])
+                <a class="button button-secondary" href="{{ route('catalog.stock', $activeBranch) }}">เอกสารเบิกและคืนอะไหล่</a>
+            @endcan
+        @endif
     </div>
 
     <form class="panel endu-catalog-filters" method="GET" action="{{ route('phase-one') }}" role="search" aria-label="ค้นหาฟังก์ชัน">

@@ -70,6 +70,22 @@
         <input type="hidden" name="base_revision" value="{{ is_scalar($baseRevision) ? $baseRevision : ($latest?->revision ?? 0) }}">
         <input type="hidden" name="assessment_revision" value="{{ is_scalar($assessmentRevision) ? $assessmentRevision : '' }}">
         @include('quotations.buyer-fields')
+        @can('permission', [$branch, \App\Enums\BranchPermission::ReadCatalog])
+            <section class="grid gap-3 rounded-lg border border-slate-200 p-4" data-quotation-catalog="{{ route('repairs.catalog-lookup', [$branch, $repair]) }}">
+                <h2 class="font-semibold">เลือกสินค้าจากทะเบียน</h2>
+                <div class="grid items-end gap-2 sm:grid-cols-[1fr_1fr_auto]">
+                    <label><span class="field-label">ชื่อ / SKU / บาร์โค้ด</span><input class="field-input" data-catalog-search maxlength="140"></label>
+                    <label><span class="field-label">รุ่นที่รองรับ</span><input class="field-input" data-catalog-model maxlength="100"></label>
+                    <button type="button" class="button button-secondary" data-catalog-find>ค้นสินค้า</button>
+                </div>
+                <div class="flex flex-wrap items-end gap-2" data-catalog-results hidden>
+                    <label class="min-w-0 grow"><span class="field-label">ผลการค้นหา</span><select class="field-input" data-catalog-product></select></label>
+                    <label><span class="field-label">กลุ่มราคา</span><select class="field-input" data-catalog-group></select></label>
+                    <button type="button" class="button button-secondary" data-catalog-add>เพิ่มลงรายการ</button>
+                </div>
+                <p class="text-sm text-slate-600" data-catalog-status role="status"></p>
+            </section>
+        @endcan
         @include('repairs.price-items', ['totalLabel' => 'ยอดรวมใบเสนอราคา', 'forQuotation' => true])
         @include('quotations.amount-fields')
         @if ($comparisonQuote)

@@ -17,6 +17,16 @@ class AuditEvent extends Model
 {
     public const SUBJECTS = [
         'repair' => 'ใบรับซ่อม', 'assessment' => 'ผลประเมิน', 'quotation' => 'ใบเสนอราคา',
+        'cash_shift' => 'กะรับเงิน', 'cash_shift_movement' => 'เงินเข้า–ออกลิ้นชัก', 'repair_refund' => 'คืนเงินใบงาน',
+        'repair_payment' => 'เอกสารรับเงิน', 'issued_document' => 'เอกสารงานบริการ',
+        'document_series' => 'ชุดเลขเอกสาร', 'service_claim' => 'รายการเคลม', 'repair_closure' => 'บันทึกปิดใบงาน',
+        'repair_photo' => 'รูปหลักฐานงานซ่อม', 'repair_quality_check' => 'ผลตรวจ QC',
+        'catalog_product' => 'ทะเบียนสินค้า', 'catalog_warehouse' => 'คลังสินค้า',
+        'catalog_location' => 'ตำแหน่งเก็บ',
+        'catalog_movement' => 'ความเคลื่อนไหวคลัง',
+        'pos_sale' => 'บิลขายหน้าร้าน',
+        'integration_connection' => 'การเชื่อมต่อ', 'integration_import' => 'นำเข้าข้อมูล',
+        'customer' => 'ลูกค้า', 'customer_device' => 'เครื่องลูกค้า', 'customer_appointment' => 'นัดหมาย',
         'organization' => 'กิจการ', 'branch' => 'สาขา', 'approval' => 'คำขออนุมัติรายการ',
         'payment_point' => 'จุดรับเงิน', 'printer' => 'โปรไฟล์เครื่องพิมพ์', 'counter' => 'เคาน์เตอร์',
         'membership' => 'สิทธิ์สาขา', 'staff_account' => 'บัญชีพนักงาน', 'invitation' => 'คำเชิญพนักงาน',

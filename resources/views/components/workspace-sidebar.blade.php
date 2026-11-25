@@ -16,6 +16,7 @@
             <p>{{ $heading }}</p>
             @foreach ($items as $module => $item)
                 @continue($module === 'REP' && $activeBranch && ! ($activeRole?->allows(\App\Enums\BranchPermission::ReadRepairs) || $activeRole?->allows(\App\Enums\BranchPermission::ReadAssignedRepairs)))
+                @continue($module === 'CRM' && $activeBranch && ! $activeRole?->allows(\App\Enums\BranchPermission::ManageCustomers))
                 @continue($module === 'APV' && (! $activeBranch || ! $activeRole
                     || ! collect(\App\Enums\ApprovalKind::cases())->contains(fn ($kind) => $kind->canRequest($activeRole))))
                 @php
@@ -27,6 +28,19 @@
                         'IAM' => $activeBranch && $activeRole?->allows(\App\Enums\BranchPermission::ManageStaff)
                             ? route('staff.index', $activeBranch) : route('phase-one', ['module' => $module, 'branch' => $activeBranch?->id]),
                         'REP' => $activeBranch ? route('repairs.index', $activeBranch) : $dashboardUrl.'#branches',
+                        'CRM' => $activeBranch ? route('crm.customers.index', $activeBranch) : $dashboardUrl.'#branches',
+                        'CAT' => $activeBranch && $activeRole?->allows(\App\Enums\BranchPermission::ReadCatalog)
+                            ? route('catalog.index', $activeBranch) : route('phase-one', ['module' => $module, 'branch' => $activeBranch?->id]),
+                        'INV' => $activeBranch && $activeRole?->allows(\App\Enums\BranchPermission::ReadPartsDocuments)
+                            ? route('catalog.stock', $activeBranch) : route('phase-one', ['module' => $module, 'branch' => $activeBranch?->id]),
+                        'POS' => $activeBranch && $activeRole?->allows(\App\Enums\BranchPermission::UsePos)
+                            ? route('pos.index', $activeBranch) : route('phase-one', ['module' => $module, 'branch' => $activeBranch?->id]),
+                        'PAY' => $activeBranch && $activeRole?->allows(\App\Enums\BranchPermission::ManagePaymentDocuments)
+                            ? route('cash-shifts.index', $activeBranch) : route('phase-one', ['module' => $module, 'branch' => $activeBranch?->id]),
+                        'DOC' => $activeBranch && $activeRole?->allows(\App\Enums\BranchPermission::ManagePaymentDocuments)
+                            ? route('payment-documents.index', $activeBranch) : route('phase-one', ['module' => $module, 'branch' => $activeBranch?->id]),
+                        'INT' => $activeBranch && $activeRole?->allows(\App\Enums\BranchPermission::ManageIntegrations)
+                            ? route('integrations.index', $activeBranch) : route('phase-one', ['module' => $module, 'branch' => $activeBranch?->id]),
                         default => route('phase-one', ['module' => $module, 'branch' => $activeBranch?->id]),
                     };
                 @endphp

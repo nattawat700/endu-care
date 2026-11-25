@@ -7,6 +7,7 @@ use App\Enums\BranchRole;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable(['submission_id', 'requested_by', 'kind', 'reference', 'amount', 'limit', 'review_role', 'status', 'reason', 'reviewed_by', 'reviewed_at', 'decision_reason'])]
 class OrganizationApprovalRequest extends Model
@@ -21,10 +22,16 @@ class OrganizationApprovalRequest extends Model
         return $this->belongsTo(User::class, 'reviewed_by');
     }
 
+    public function posSale(): HasOne
+    {
+        return $this->hasOne(PosSale::class, 'approval_id');
+    }
+
     public function statusLabel(): string
     {
         return match ($this->status) {
             'pending' => 'รออนุมัติ',
+            'withdrawn' => 'ถอนคำขอแล้ว',
             'approved' => 'อนุมัติแล้ว',
             'rejected' => 'ไม่อนุมัติ',
             'within_limit' => 'อยู่ในเพดาน',

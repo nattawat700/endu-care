@@ -19,4 +19,16 @@ class RepairJobPolicy
             default => Response::denyAsNotFound(),
         };
     }
+
+    public function viewDeposits(User $user, RepairJob $repair): Response
+    {
+        $view = $this->view($user, $repair);
+        if ($view->denied()) {
+            return $view;
+        }
+
+        return $repair->branch->roleFor($user)?->allows(BranchPermission::ViewRepairDeposits)
+            ? Response::allow()
+            : Response::denyAsNotFound();
+    }
 }
